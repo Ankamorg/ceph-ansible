@@ -60,3 +60,10 @@
   when:
     - use_systemd
     - ceph_release_num.{{ ceph_release }} > ceph_release_num.hammer
+
+- name: ceph osd crush tunables optimal
+  command: ceph osd crush tunables optimal
+  changed_when: false
+  failed_when:  false
+  when: osd_crush_tunables_optimal 
+

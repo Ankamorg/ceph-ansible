@@ -1,0 +1,44 @@
+---
+- include: ssd_devices_osd_id.yml
+  when: ssd_devices_conf is defined
+
+- include: sata_devices_osd_id.yml
+  when: sata_devices_conf is defined
+
+- name: generate ceph configuration file
+  action: config_template
+  args:
+    src: ceph.conf.j2
+#    dest: /etc/ceph/ceph.conf.tmp
+    dest: /etc/ceph/ceph.conf
+    owner: "ceph"
+    group: "ceph"
+    mode: "0664"
+    config_overrides:
+    config_type: ini
+
+#---
+#- name: get osd path
+#  shell: "df | grep {{ item }} | awk '{print $6}'"
+#  with_items: ssd_devices
+#  changed_when: false
+#  failed_when: false
+#  register: ssd_osd_path
+#
+#- name: get osd id
+#  command: cat {{ item.stdout }}/whoami
+#  with_items: ssd_osd_path.results
+#  changed_when: false
+#  failed_when: false
+#  register: ssd_osd_id
+#
+##- name: debug
+##  debug: msg="{{ ssd_osd_id['results'] }}"
+#
+#- name: ssd id array genders
+#  set_fact:
+#    ssd_id_array: "{{ ssd_id_array | default([]) + [ item.stdout ] }}"
+#  with_items: ssd_osd_id.results
+
+#- name: debug
+#  debug: msg="{{ ssd_id_array }}"

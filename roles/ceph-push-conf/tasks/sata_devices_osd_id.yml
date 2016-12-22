@@ -1,0 +1,33 @@
+---
+- name: get osd path
+  shell: "df | grep {{ item }} | awk '{print $6}'"
+  with_items: sata_devices_conf
+  changed_when: false
+  failed_when: false
+  register: sata_osd_path
+  when:
+    - sata_devices_conf is defined
+
+- name: get osd id
+  command: cat {{ item.stdout }}/whoami
+  with_items: sata_osd_path.results
+  changed_when: false
+  failed_when: false
+  register: sata_osd_id
+  when:
+    - sata_osd_path is defined
+
+#- name: debug
+#  debug: msg="{{ ssd_osd_id['results'] }}"
+
+- name: sata id array genders
+  set_fact:
+    sata_id_array: "{{ sata_id_array | default([]) + [ item.stdout ] }}"
+  with_items: sata_osd_id.results
+  when:
+    - sata_osd_id is defined
+
+- name: debug
+  debug: msg="{{ sata_id_array }}"
+  when:
+    - sata_id_array is defined
