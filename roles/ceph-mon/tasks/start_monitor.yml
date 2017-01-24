@@ -61,9 +61,19 @@
     - use_systemd
     - ceph_release_num.{{ ceph_release }} > ceph_release_num.hammer
 
+- name: collect admin and bootstrap keys
+  command: ceph-create-keys --cluster {{ cluster }} --id {{ monitor_name }}
+  changed_when: false
+  failed_when:  false
+  when: cephx
+
 - name: ceph osd crush tunables optimal
   command: ceph osd crush tunables optimal
   changed_when: false
   failed_when:  false
   when: osd_crush_tunables_optimal 
 
+- name: enable start ceph-mon.target after reboot
+  command:  ln -s  /usr/lib/systemd/system/ceph-mon.target  /etc/systemd/system/ceph.target.wants/ceph-mon.target
+  changed_when: false
+  failed_when:  false
