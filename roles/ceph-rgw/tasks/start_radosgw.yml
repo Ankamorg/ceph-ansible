@@ -45,3 +45,15 @@
   when:
     - use_systemd
     - ceph_release_num.{{ ceph_release }} > ceph_release_num.hammer
+    - instances is not defined
+
+- name: start rgw with systemd (for or after infernalis) for rgw instances
+  service:
+    name: ceph-radosgw@rgw.{{ item }}
+    state: started
+    enabled: yes
+  with_items: "{{ instances }}"
+  when:
+    - use_systemd
+    - ceph_release_num.{{ ceph_release }} > ceph_release_num.hammer
+    - instances is defined
