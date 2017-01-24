@@ -112,10 +112,12 @@
     - rgw_group_name in group_names
     - ceph_release_num.{{ ceph_release }} < ceph_release_num.infernalis
 
+
 - name: restart ceph rgws with systemd
   service:
-    name: ceph-rgw@{{ ansible_hostname }}
+    name: ceph-radosgw@rgw.{{ item }}
     state: restarted
+  with_items: "{{ instances }}"
   when:
     - socketrgw.rc == 0
     - use_systemd
