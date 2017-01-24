@@ -1,44 +1,69 @@
-debug_asok = 0/0
-debug_auth = 0/0
-debug_buffer = 0/0
-debug_civetweb = 0/0
-debug_client = 0/0
-debug_context = 0/0
-debug_crush = 0/0
-debug_filer = 0/0
-debug_filestore = 0/0
-debug_finisher = 0/0
-debug_hadoop = 0/0
-debug_heartbeatmap = 0/0
-debug_journal = 0/0
-debug_journaler = 0/0
-debug_lockdep = 0/0
-debug_mds = 0/0
-debug_mds_balancer = 0/0
-debug_mds_locker = 0/0
-debug_mds_log = 0/0
-debug_mds_log_expire = 0/0
-debug_mds_migrator = 0/0
-debug_mon = 0/0
-debug_monc = 0/0
-debug_ms = 0/0
-debug_objclass = 0/0
-debug_objectcacher = 0/0
-debug_objecter = 0/0
-debug_optracker = 0/0
-debug_osd = 0/0
-debug_paxos = 0/0
-debug_perfcounter = 0/0
-debug_rados = 0/0
-debug_rbd = 0/0
-debug_rgw = 0/0
-debug_throttle = 0/0
-debug_timer = 0/0
-debug_tp = 0/0
-ms_type = simple
-osd_pool_default_min_size = 1
-osd_pool_default_pg_num = 64
-osd_pool_default_pgp_num = 64
-osd_pool_default_size = 3
-mon_min_osdmap_epochs = 300
-osd_pool_erasure_code_stripe_width = 65536
+[global]
+{% if not cephx %}
+auth_cluster_required = none
+auth_service_required = none
+auth_client_required = none
+auth_supported = none
+{% endif %}
+{% if not mon_containerized_deployment_with_kv and not mon_containerized_deployment %}
+fsid = {{ fsid }}
+{% endif %}
+max_open_files = {{ max_open_files }}
+{% if common_single_host_mode is defined and common_single_host_mode %}
+osd_crush_chooseleaf_type = 0
+{% endif %}
+{# NOTE (leseb): the blank lines in-between are needed otherwise we won't get any line break #}
+{% if groups[mon_group_name] is defined %}
+mon_initial_members = {% for host in groups[mon_group_name] %}
+      {% if hostvars[host]['ansible_fqdn'] is defined and mon_use_fqdn -%}
+        {{ hostvars[host]['ansible_fqdn'] }}
+      {%- elif hostvars[host]['ansible_hostname'] is defined -%}
+        {{ hostvars[host]['ansible_hostname'] }}
+      {%- endif %}
+      {%- if not loop.last %},{% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if not mon_containerized_deployment and not mon_containerized_deployment_with_kv %}
+{% if monitor_address_block %}
+mon_host = {% for host in groups[mon_group_name] %}{{ hostvars[host]['ansible_all_ipv4_addresses'] | ipaddr(monitor_address_block) | first }}{% if not loop.last %},{% endif %}{% endfor %}
+{% elif groups[mon_group_name] is defined %}
+mon_host = {% for host in groups[mon_group_name] %}
+             {% set address = hostvars[host]['monitor_address'] if hostvars[host]['monitor_address'] is defined else monitor_address %}
+             {% set interface = hostvars[host]['monitor_interface'] if hostvars[host]['monitor_interface'] is defined else monitor_interface %}
+             {% if interface != "interface" %}
+               {% for key in hostvars[host].keys() %}
+                 {% if hostvars[host][key]['macaddress'] is defined and hostvars[host][key]['device'] is defined and hostvars[host][key]['device'] == interface -%}
+                    {{ hostvars[host][key]['ipv4']['address'] }}
+                 {%- endif %}
+               {% endfor %}
+             {% elif address != "0.0.0.0" -%}
+               {{ address }}
+             {%- endif %}
+             {%- if not loop.last %},{% endif %}
+           {% endfor %}
+{% endif %}
+{% endif %}
+{% if mon_containerized_deployment %}
+fsid = {{ fsid }}
+{% if groups[mon_group_name] is defined %}
+mon_host = {% for host in groups[mon_group_name] %}
+             {% set interface = ["ansible_",ceph_mon_docker_interface]|join %}
+             {% if mon_containerized_deployment -%}
+                {{ hostvars[host][interface]['ipv4']['address'] }}
+             {%- elif hostvars[host]['monitor_address'] is defined -%}
+                {{ hostvars[host]['monitor_address'] }}
+             {%- elif monitor_address != "0.0.0.0" -%}
+                {{ monitor_address }}
+             {%- endif %}
+             {%- if not loop.last %},{% endif %}
+           {% endfor %}
+{% endif %}
+{% endif %}
+
+{% if public_network is defined %}
+public_network = {{ public_network }}
+{% endif %}
+{% if cluster_network is defined %}
+cluster_network = {{ cluster_network }}
+{% endif %}
