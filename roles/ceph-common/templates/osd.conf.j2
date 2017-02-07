@@ -1,4 +1,13 @@
 [osd]
+{% if osd_host is defined %}
+host = {{ osd_host }}
+{% endif %}
+{% if osd_public_addr is defined %}
+public_addr = {{ osd_public_addr }}
+{% endif %}
+{% if osd_cluster_addr is defined %}
+cluster_addr = {{ osd_cluster_addr }}
+{% endif %}
 osd_mkfs_type = {{ osd_mkfs_type }}
 osd_mkfs_options xfs = {{ osd_mkfs_options_xfs }}
 osd_mount_options xfs = {{ osd_mount_options_xfs }}
