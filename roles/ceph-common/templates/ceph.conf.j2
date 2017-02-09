@@ -52,3 +52,10 @@ rgw_frontends = "civetweb port={{ rgw4['radosgw_civetweb_port'] }}"
 {% if rgw4['rgw_enable_usage_log'] is defined %}rgw_enable_usage_log = {{ rgw4['rgw_enable_usage_log'] }}                                       
 {% endif %}                                                                                     
 {% endif %}                                                                                     
+
+{% if groups[restapi_group_name] is defined %}
+[client.restapi]
+{% include 'client_restapi_address.j2' %}
+keyring = /var/lib/ceph/restapi/ceph-restapi/keyring
+log file = /var/log/ceph/ceph-restapi.log
+{% endif %}
