@@ -1,4 +1,21 @@
 ---
+- name: install latest ceph-rest-api
+  yum:
+    name: ceph-rest-api
+    state: latest
+    update_cache: yes
+
+- name: reload systemd
+  command: systemctl daemon-reload
+
+- name: change log file mode
+  file:
+    path: /var/log/ceph/ceph-restapi.log
+    owner: ceph
+    group: ceph
+    mode: 0644
+  failed_when: false
+
 - name: create ceph rest api directory
   file:
     path: /var/lib/ceph/restapi/ceph-restapi
