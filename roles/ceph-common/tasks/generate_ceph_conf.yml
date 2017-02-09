@@ -32,3 +32,4 @@
     - restart ceph rgws on red hat
     - restart ceph rgws with systemd
     - restart ceph nfss
+    - restart ceph rest api with systemd
