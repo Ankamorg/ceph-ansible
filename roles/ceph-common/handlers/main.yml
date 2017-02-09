@@ -130,3 +130,11 @@
     state: restarted
   when:
     - nfs_group_name in group_names
+
+- name: restart ceph rest api with systemd
+  service:
+    name: ceph-rest-api
+    state: restarted
+  failed_when: false
+  when:
+    - restapi_group_name in group_names
