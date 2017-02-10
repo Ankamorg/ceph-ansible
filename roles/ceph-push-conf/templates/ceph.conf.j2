@@ -57,5 +57,6 @@ rgw_frontends = "civetweb port={{ rgw4['radosgw_civetweb_port'] }}"
 [client.restapi]
 {% include 'client_restapi_address.j2' %}
 keyring = /var/lib/ceph/restapi/ceph-restapi/keyring
-log file = /var/log/ceph/ceph-restapi.log
+log_file = /var/log/ceph/ceph-restapi.log
+restapi_log_level = info
 {% endif %}
