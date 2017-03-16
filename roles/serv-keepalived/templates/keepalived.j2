@@ -1,0 +1,60 @@
+! Configuration File for keepalived
+global_defs {
+   router_id LVS-oNest
+}
+{% for vrrp_instance in vrrp_instances %}
+vrrp_instance {{ vrrp_instance['name'] }} {
+{% if hostvars[ansible_ssh_host]['master'] == vrrp_instance['name'] %}
+    state MASTER
+    priority 200
+{% else %}
+    state BACKUP
+    priority 100
+{% endif %}
+    interface {{ vrrp_instances_devices }}
+    virtual_router_id {{ vrrp_instance['virtual_router_id'] }}
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass onest1234
+    }
+    virtual_ipaddress {
+        {{ vrrp_instance['vip'] }}/24 dev {{ vrrp_instances_devices }}
+    }
+}
+{% endfor %}
+
+
+
+{% for virtual_server_group in virtual_server_groups %}
+virtual_server_group {{ virtual_server_group['name'] }} {
+{% for vip in virtual_server_group['vips'] %}
+    {{ vip }} {{ virtual_server_group['port'] }}
+{% endfor %}
+}
+{% endfor %}
+
+
+{% for virtual_server_group in virtual_server_groups %}
+virtual_server group {{ virtual_server_group['name'] }} {
+    delay_loop 6
+    lb_algo rr
+    lb_kind DR
+    persistence_timeout 10
+    protocol TCP
+
+{% for real_server in virtual_server_group['real_servers'] %}
+    real_server {{ real_server }} {{ virtual_server_group['port'] }} {
+        weight 1
+        TCP_CHECK {
+            connect_timeout 3
+            nb_get_retry 3
+            delay_before_retry 3
+            connect_port {{ virtual_server_group['port'] }}
+        }
+    }
+{% endfor %}
+}
+{% endfor %}
+
+
