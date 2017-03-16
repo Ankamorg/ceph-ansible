@@ -1,0 +1,34 @@
+---
+# tasks file for lvs
+
+- name: install net-tools
+  yum:
+    name: net-tools
+    state: present
+
+- name: lvs-rgw
+  template: src=lvs_ceph.j2
+            dest=/etc/init.d/lvs-ceph
+            owner=root
+            group=root
+            mode=755
+  when: cephvips is defined
+
+- name: lvs-rgw.service
+  template: src=lvs_ceph.service.j2
+            dest=/etc/systemd/system/lvs-ceph.service
+            owner=root
+            group=root
+            mode=640
+  when: cephvips is defined
+#  notify: start and enable lvs-ceph.service
+
+
+- name: start and enable lvs-ceph.service
+  service: name=lvs-ceph.service state=started enabled=yes
+  when: cephvips is defined
+
+
+- name: restart and lvs-ceph.service
+  service: name=lvs-ceph.service state=restarted 
+  when: cephvips is defined

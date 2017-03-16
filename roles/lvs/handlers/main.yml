@@ -1,0 +1,5 @@
+---
+# handlers file for lvs
+
+- name: start and enable lvs-ceph.service
+  service: name=lvs-ceph.service state=started enabled=yes

@@ -1,0 +1,14 @@
+[Unit]
+Description=lvs-rgw
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart= /etc/init.d/lvs-ceph start
+ExecStop= /etc/init.d/lvs-ceph stop
+ExecReload= /etc/init.d/lvs-ceph restart
+TimeoutSec=0
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
