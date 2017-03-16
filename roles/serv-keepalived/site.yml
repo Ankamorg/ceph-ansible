@@ -1,0 +1,16 @@
+---
+- hosts: test
+  become: True
+  vars:
+    - vrrp_instances: [
+    {name: 'vi1',vip: '192.168.153.222',virtual_router_id: '222'},
+    {name: 'vi2',vip: '192.168.153.223',virtual_router_id: '223'}
+    ]
+    - vrrp_instances_devices: 'ens33'
+    - virtual_server_groups: [
+    {name: 'RGW_BUSINESS_80', vips: ['192.168.153.222','192.168.153.223'], port: '80',real_servers: ['192.168.153.156']},
+    {name: 'RGW_BUSINESS_7480', vips: ['192.168.153.222','192.168.153.223'], port: '7480',real_servers: ['192.168.153.156']}
+    ]
+  roles:
+  - serv-keepalived
+
