@@ -1,0 +1,82 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Description:       This file should be used to construct scripts to be
+#                    placed in /etc/init.d.
+### END INIT INFO
+CEPH_VIP=({% for cephvip in cephvips %}"{{ cephvip }}"{% if not loop.last %} {% endif %}{% endfor %})
+
+mkdir -p /var/log/ceph/
+LOGFILE='/var/log/ceph/lvs_ceph'
+RETVAL=0
+LENGTH_VIP={{ cephvips|length }}
+
+function startlvs() {
+    for(( i=0;i<$LENGTH_VIP;i++))
+    do
+	/sbin/ifconfig lo:$i ${CEPH_VIP[$i]} netmask 255.255.255.255 broadcast ${CEPH_VIP[$i]} up
+        /sbin/route add -host ${CEPH_VIP[$i]} dev lo:$i
+    done
+    sleep 1
+    echo "1" >/proc/sys/net/ipv4/conf/lo/arp_ignore
+    echo "2" >/proc/sys/net/ipv4/conf/lo/arp_announce
+    echo "1" >/proc/sys/net/ipv4/conf/all/arp_ignore
+    echo "2" >/proc/sys/net/ipv4/conf/all/arp_announce
+    sysctl -p >/dev/null 2>&1
+}
+
+function stoplvs() {
+    for(( i=0;i<$LENGTH_VIP;i++))
+    do
+	/sbin/ifconfig lo:$i down
+        /sbin/route del ${CEPH_VIP[$i]} >/dev/null 2>&1
+    done
+    sleep 1
+    echo "0" >/proc/sys/net/ipv4/conf/lo/arp_ignore
+    echo "0" >/proc/sys/net/ipv4/conf/lo/arp_announce
+    echo "0" >/proc/sys/net/ipv4/conf/all/arp_ignore
+    echo "0" >/proc/sys/net/ipv4/conf/all/arp_announce
+    sysctl -p >/dev/null 2>&1
+}
+
+. /etc/rc.d/init.d/functions
+case "$1" in
+start)
+       startlvs $CEPH_VIP
+       for(( i=0;i<$LENGTH_VIP;i++))
+       do
+           IPADDR=${CEPH_VIP[i]}
+           RETVAL=`ip a | grep "$IPADDR scope global lo:" | wc -l`
+           if [ $RETVAL -eq 1 ];
+           then
+               echo "`date` RealServer $IPADDR Start OK" >> $LOGFILE
+           else
+               echo "`date` RealServer $IPADDR Start failed" >> $LOGFILE
+               startlvs $CEPH_VIP
+           fi
+       done
+       ;;
+stop)
+       stoplvs $CEPH_VIP
+       for(( i=0;i<$LENGTH_VIP;i++))
+       do
+           IPADDR=${CEPH_VIP[i]}
+           RETVAL=`ip a | grep "$IPADDR scope global lo:" | wc -l`
+           if [ $RETVAL -eq 1 ];
+           then
+               echo "`date` RealServer $IPADDR Stop failed" >> $LOGFILE
+               stoplvs $CEPH_VIP
+           else
+               echo "`date` RealServer $IPADDR Stoped" >> $LOGFILE
+           fi
+       done
+       ;;
+restart)
+       stoplvs $CEPH_VIP
+       sleep 1
+       startlvs $CEPH_VIP
+       ;;
+*)
+       echo "Usage: $0 {start|stop|restart}"
+       exit 1
+esac
+exit 0
