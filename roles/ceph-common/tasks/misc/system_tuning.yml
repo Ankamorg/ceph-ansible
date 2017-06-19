@@ -21,6 +21,20 @@
   set_fact:
     vm_min_free_kbytes: "{{ 4194303 if ansible_memtotal_mb >= 49152 else default_vm_min_free_kbytes.stdout }}"
 
+- name: install redhat dependencies
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ redhat_package_dependencies }}"
+  when: ansible_distribution == "RedHat"
+
+- name: install centos dependencies
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ centos_package_dependencies }}"
+  when: ansible_distribution == "CentOS"
+
 - name: apply operating system tuning
   sysctl:
     name: "{{ item.name }}"
@@ -29,3 +43,4 @@
     sysctl_file: /etc/sysctl.conf
     ignoreerrors: yes
   with_items: "{{ os_tuning_params }}"
+

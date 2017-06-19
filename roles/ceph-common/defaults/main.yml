@@ -52,6 +52,7 @@ redhat_package_dependencies:
   - hdparm
   - ntp
   - python-setuptools
+  - libselinux-python
 
 # Enable the ntp service by default to avoid clock skew on
 # ceph nodes
