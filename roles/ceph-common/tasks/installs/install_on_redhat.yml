@@ -138,7 +138,9 @@
   package:
     name: ceph-radosgw
     state: "{{ (upgrade_ceph_packages|bool) | ternary('latest','present') }}"
-  when: rgw_group_name in group_names
+  when:
+    - rgw_group_name in group_names
+    - not rgw_containerized_deployment
 
 - name: install nfs ceph gateway
   package:

@@ -87,6 +87,7 @@
   when:
     - use_systemd
     - ceph_release_num.{{ ceph_release }} < ceph_release_num.infernalis
+    - not rgw_containerized_deployment
 
 - name: activate rados gateway with upstart
   file:
@@ -102,6 +103,7 @@
   when:
     - ansible_distribution == "Ubuntu"
     - not use_systemd
+    - not rgw_containerized_deployment
 
 - name: activate rados gateway with sysvinit
   file:
@@ -117,6 +119,7 @@
   when:
     - ansible_distribution != "Ubuntu"
     - instances is not defined
+    - not rgw_containerized_deployment
 
 - name: activate rados gateway with sysvinit for rgw instances
   file:
@@ -132,6 +135,7 @@
   when:
     - ansible_distribution != "Ubuntu"
     - instances is defined
+    - not rgw_containerized_deployment
 
 
 - name: generate rados gateway sudoers file

@@ -55,4 +55,4 @@
 
 - include: start_docker_rgw.yml
 
-- include: copy_configs.yml
+#- include: copy_configs.yml

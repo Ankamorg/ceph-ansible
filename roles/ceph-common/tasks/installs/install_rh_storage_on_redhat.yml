@@ -63,6 +63,7 @@
     state: "{{ (upgrade_ceph_packages|bool) | ternary('latest','present') }}"
   when:
     - rgw_group_name in group_names
+    - not rgw_containerized_deployment
 
 - name: install NFS gateway
   package:

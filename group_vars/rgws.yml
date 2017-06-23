@@ -1,0 +1,27 @@
+rgw_containerized_deployment: true
+ceph_rgw_docker_username: 192.168.153.128:5000
+ceph_rgw_docker_imagename: rgw
+ceph_rgw_docker_image_tag: v14
+rgw1:
+    instance_name: "rgw1"
+    radosgw_civetweb_bind_ip: "0.0.0.0"
+    radosgw_civetweb_port: "80"
+    rgw_enable_usage_log: "True"
+
+rgw2:
+    instance_name: "rgw2"
+    radosgw_civetweb_bind_ip: "0.0.0.0"
+    radosgw_civetweb_port: "8081"
+    rgw_enable_usage_log: "True"
+
+rgw3:
+    instance_name: "rgw3"
+    radosgw_civetweb_bind_ip: "0.0.0.0"
+    radosgw_civetweb_port: "8082"
+    rgw_enable_usage_log: "False"
+
+rgw4:
+    instance_name: "rgw4"
+    radosgw_civetweb_bind_ip: "0.0.0.0"
+    radosgw_civetweb_port: "8083"
+    rgw_enable_usage_log: "False"
