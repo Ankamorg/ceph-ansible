@@ -1,0 +1,8 @@
+---
+- hosts: 
+  - mons
+  - osds
+  - rgws
+  tasks:
+  - name: set host name
+    command: "sh -c 'hostnamectl set-hostname {{inventory_hostname}}'"
