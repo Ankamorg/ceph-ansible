@@ -1,8 +1,8 @@
 #uncommont this when you want to deploy rgw on docker
-rgw_containerized_deployment: false
-#ceph_rgw_docker_username: 192.168.153.128:5000
-#ceph_rgw_docker_imagename: rgw
-#ceph_rgw_docker_image_tag: v14
+rgw_containerized_deployment: true
+ceph_rgw_docker_username: registry.paas/library
+ceph_rgw_docker_imagename: rgw
+ceph_rgw_docker_image_tag: latest
 rgw1:
     instance_name: "rgw1"
     radosgw_civetweb_bind_ip: "0.0.0.0"

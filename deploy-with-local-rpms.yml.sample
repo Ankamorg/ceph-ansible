@@ -1,0 +1,102 @@
+---
+- hosts: mons
+  tasks:
+  - name: Ensure /tmp/ceph exist
+    file:
+        path: "/tmp/ceph"
+        state: directory
+
+  - name: copy ceph-mon rpms
+    local_action: "shell sshpass -p {{ ansible_password }} scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ playbook_dir }}/tar/yum-mon.tar.gz {{ ansible_user }}@{{ ansible_host }}:/tmp/yum-mon.tar.gz"
+
+  - name: Unarchive yum-mon.tar.gz
+    shell: "tar -xzvf /tmp/yum-mon.tar.gz -C /tmp/ceph"
+
+  - name: install rpms
+    command: "sh -c 'yum localinstall -y /tmp/ceph/yum-mon/*.rpm'"
+
+- hosts: osds
+  tasks:
+  - name: Ensure /tmp/ceph exist
+    file:
+        path: "/tmp/ceph"
+        state: directory
+
+  - name: copy ceph-osd rpms
+    local_action: "shell sshpass -p {{ ansible_password }} scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ playbook_dir }}/tar/yum-osd.tar.gz {{ ansible_user }}@{{ ansible_host }}:/tmp/yum-osd.tar.gz"
+
+  - name: Unarchive yum-osd.tar.gz
+    shell: "tar -xzvf /tmp/yum-osd.tar.gz -C /tmp/ceph"
+
+  - name: install rpms
+    command: "sh -c 'yum localinstall -y /tmp/ceph/yum-osd/*.rpm'"
+
+- hosts: rgws
+  tasks:
+  - name: Ensure /tmp/docker exist
+    file:
+        path: "/tmp/docker"
+        state: directory
+
+  - name: copy docker rpms
+    local_action: "shell sshpass -p {{ ansible_password }} scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ playbook_dir }}/tar/docker.tar.gz {{ ansible_user }}@{{ ansible_host }}:/tmp/docker.tar.gz"
+    when: rgw_containerized_deployment
+
+  - name: Unarchive docker.tar.gz
+    shell: "tar -xzvf /tmp/docker.tar.gz -C /tmp"
+    when: rgw_containerized_deployment
+
+  - name: install rpms
+    command: "sh -c 'yum localinstall -y /tmp/docker/*.rpm'"
+
+  - name: start docker
+    service: name=docker.service state=started enabled=yes
+    when: rgw_containerized_deployment
+
+  - name: copy rgw.tar
+    local_action: "shell sshpass -p {{ ansible_password }} scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ playbook_dir }}/tar/rgw.tar {{ ansible_user }}@{{ ansible_host }}:/tmp/rgw.tar"
+    when: rgw_containerized_deployment
+
+  - name: load rgw.tar
+    command: "docker load -i /tmp/rgw.tar"
+    when: rgw_containerized_deployment
+
+- hosts:
+  - rgws
+  tasks:
+  - name: Ensure /tmp/ceph exist
+    file:
+        path: "/tmp/ceph"
+        state: directory
+
+  - name: copy ceph-rgw rpms
+    local_action: "shell sshpass -p {{ ansible_password }} scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ playbook_dir }}/tar/yum-rgw.tar.gz {{ ansible_user }}@{{ ansible_host }}:/tmp/yum-rgw.tar.gz"
+    when: not rgw_containerized_deployment
+
+  - name: Unarchive yum-rgw.tar.gz
+    shell: "tar -xzvf /tmp/yum-rgw.tar.gz -C /tmp/ceph"
+    when: not rgw_containerized_deployment
+
+  - name: install rpms
+    command: "sh -c 'yum localinstall -y /tmp/ceph/yum-rgw/*.rpm'"
+    when: not rgw_containerized_deployment
+
+- hosts: mons
+  become: True
+  roles:
+  - ceph-mon
+  vars:
+    - devices: []
+
+- hosts: osds
+  become: True
+  roles:
+    - { role: ceph-osd, devices: "['/dev/sdb']" }
+
+- hosts: rgws
+  become: True
+  roles:
+  - ceph-rgw
+  vars:
+    - devices: "[]"
+    - instances: ["rgw1","rgw2","rgw3","rgw4"]
