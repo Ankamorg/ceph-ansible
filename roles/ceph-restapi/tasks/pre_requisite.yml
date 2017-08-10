@@ -1,9 +1,6 @@
 ---
 - name: install latest ceph-rest-api
-  yum:
-    name: ceph-rest-api
-    state: latest
-    update_cache: yes
+  command: yum install -y ceph-rest-api
 
 - name: reload systemd
   command: systemctl daemon-reload
