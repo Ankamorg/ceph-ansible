@@ -1,4 +1,4 @@
-node1 ansible_host=192.168.153.162  ansible_password=qwe123  ip=192.168.153.162
+node1 ansible_host=192.168.153.162 ansible_hostname=node1 ansible_password=qwe123  ip=192.168.153.162
 [mons]
 node1
 [osds]
@@ -6,3 +6,4 @@ node1
 [rgws]
 node1
 [restapis]
+node1
