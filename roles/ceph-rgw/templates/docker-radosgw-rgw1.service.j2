@@ -1,0 +1,17 @@
+[Unit]
+Description=Ceph RGW
+After=docker.service
+
+[Service]
+EnvironmentFile=-/etc/environment
+ExecStartPre=-/usr/bin/docker stop rgw.rgw1
+ExecStartPre=-/usr/bin/docker rm rgw.rgw1
+ExecStart=/usr/bin/docker run --rm -p {{ rgw1['radosgw_civetweb_port'] }}:{{ rgw1['radosgw_civetweb_port'] }} -v /var/lib/ceph:/var/lib/ceph -v /etc/ceph:/etc/ceph -v /var/log/ceph/:/var/log/ceph -v /etc/localtime:/etc/localtime:ro --privileged --name=rgw.rgw1 -e RGW_NAME=rgw.rgw1 rgw:latest
+ExecStopPost=-/usr/bin/docker stop rgw.rgw1
+Restart=always
+RestartSec=10s
+TimeoutStartSec=120
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target

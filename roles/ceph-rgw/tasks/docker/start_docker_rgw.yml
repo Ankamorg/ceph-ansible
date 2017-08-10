@@ -3,12 +3,50 @@
 - name: generate systemd unit file
   become: true
   template:
-    src: "{{ playbook_dir }}/roles/ceph-rgw/templates/ceph-rgw.service.j2"
-    dest: /usr/lib/systemd/system/ceph-radosgw@.service
+    src: "{{ playbook_dir }}/roles/ceph-rgw/templates/docker-radosgw-rgw1.service.j2"
+    dest: /usr/lib/systemd/system/ceph-radosgw-rgw1.service
     owner: "root"
     group: "root"
     mode: "0644"
-  when: ansible_os_family == 'RedHat' or ansible_os_family == 'CoreOS'
+  when: 
+    - ansible_os_family == 'RedHat' or ansible_os_family == 'CoreOS'
+    - rgw1 is defined
+
+- name: generate systemd unit file
+  become: true
+  template:
+    src: "{{ playbook_dir }}/roles/ceph-rgw/templates/docker-radosgw-rgw2.service.j2"
+    dest: /usr/lib/systemd/system/ceph-radosgw-rgw2.service
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: 
+    - ansible_os_family == 'RedHat' or ansible_os_family == 'CoreOS'
+    - rgw2 is defined
+
+- name: generate systemd unit file
+  become: true
+  template:
+    src: "{{ playbook_dir }}/roles/ceph-rgw/templates/docker-radosgw-rgw3.service.j2"
+    dest: /usr/lib/systemd/system/ceph-radosgw-rgw3.service
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: 
+    - ansible_os_family == 'RedHat' or ansible_os_family == 'CoreOS'
+    - rgw3 is defined
+
+- name: generate systemd unit file
+  become: true
+  template:
+    src: "{{ playbook_dir }}/roles/ceph-rgw/templates/docker-radosgw-rgw4.service.j2"
+    dest: /usr/lib/systemd/system/ceph-radosgw-rgw4.service
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: 
+    - ansible_os_family == 'RedHat' or ansible_os_family == 'CoreOS'
+    - rgw4 is defined
 
 - name: reload systemd unit files
   shell: systemctl daemon-reload
@@ -18,7 +56,7 @@
 
 - name: systemd start rgw container
   service:
-    name: ceph-radosgw@rgw.{{ item }}
+    name: ceph-radosgw-{{ item }}
     state: started
     enabled: yes
   with_items: "{{ instances }}"

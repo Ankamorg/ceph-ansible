@@ -100,3 +100,21 @@
   vars:
     - devices: "[]"
     - instances: ["rgw1","rgw2","rgw3","rgw4"]
+
+- hosts:
+  - restapis
+  tasks:
+  - name: Ensure /tmp/ceph exist
+    file:
+        path: "/tmp/ceph"
+        state: directory
+
+  - name: copy ceph-rest-api-1.4.2-1.noarch.rpm
+    local_action: "shell sshpass -p {{ ansible_password }} scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ playbook_dir }}/tar/ceph-rest-api-1.4.2-1.noarch.rpm {{ ansible_user }}@{{ ansible_host }}:/tmp/ceph-rest-api-1.4.2-1.noarch.rpm"
+
+- hosts: restapis
+  gather_facts: false
+  become: True
+  roles:
+  - ceph-restapi
+
